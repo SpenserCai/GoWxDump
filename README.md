@@ -3,7 +3,7 @@
  * @Date: 2023-02-17 18:04:27
  * @version: 
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-17 18:10:05
+ * @LastEditTime: 2023-02-17 19:15:03
  * @Description: file content
 -->
 # GoWxDump
@@ -24,6 +24,8 @@ go build
 ```
 GoWxDump.exe
 ```
+## GoWxDump原创功能
+### 1.支持获取数据目录
 ## 免责声明
 本项目仅允许在授权情况下对数据库进行备份，严禁用于非法目的，否则自行承担所有相关责任。使用该工具则代表默认同意该条款;
 
