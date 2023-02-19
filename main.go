@@ -132,6 +132,16 @@ func GetWeChatDir() (string, error) {
 	return msgDir, nil
 }
 
+func IsSupportAutoGetData(version string) bool {
+	// 判断version是否在支持的版本列表中
+	for _, v := range SupportAutoGetDataVersionList {
+		if version == v {
+			return true
+		}
+	}
+	return false
+}
+
 // 获取微信消息目录下的所有用户目录，排除All Users目录和Applet目录，返回一个map，key用户id，value用户目录
 func GetWeChatUserDir(wechatRoot string) (map[string]string, error) {
 	userDir := make(map[string]string)
@@ -224,5 +234,19 @@ func main() {
 	for k, v := range userDir {
 		fmt.Printf("[%s]:%s \n", k, v)
 	}
+	// 判断是否支持自动获取数据目录（version是否在SupportAutoGetDataVersionList列表中）
+	if !IsSupportAutoGetData(version) {
+		fmt.Println("不支持自动获取数据目录")
+		return
+	}
+	// 获取用户数据目录
+	dataDirName, err := GetWeChatData(wechatProcessHandle, module.ModBaseAddr+uintptr(OffSetMap[version][5]), 100)
+	if err != nil {
+		fmt.Println("GetWeChatDataDir error: ", err)
+		return
+	}
+	// 获取用户数据目录，拼接成绝对路径
+	dataDir := filepath.Join(wechatRoot, dataDirName)
+	fmt.Println("WeChat DataDir: ", dataDir)
 
 }

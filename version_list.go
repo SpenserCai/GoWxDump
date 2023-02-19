@@ -1,6 +1,11 @@
 package main
 
-// 一个map，key是版本号，value一个list，list里面偏移的10进制
+// 支持自动获取数据的版本号
+var SupportAutoGetDataVersionList = []string{
+	"3.9.0.28",
+}
+
+// 一个map，key是版本号，value一个list，list里面偏移的10进制,0:微信昵称，1:微信号，2:手机号，3:邮箱，4:key，5:微信id（原始的微信号，用于获取微信数据目录，支持版本：3.9.0.28）
 var OffSetMap = map[string][]int{
 	"3.2.1.15": {
 		328121948,
@@ -267,5 +272,6 @@ var OffSetMap = map[string][]int{
 		48418232,
 		38986104,
 		48419244,
+		48418108,
 	},
 }
