@@ -3,7 +3,7 @@
  * @Date: 2023-02-17 14:14:40
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-20 16:00:09
+ * @LastEditTime: 2023-02-20 16:48:28
  * @Description: file content
  */
 package main
@@ -207,9 +207,9 @@ func main() {
 		fmt.Println("GetWeChatUserDir error: ", err)
 		return
 	}
-	for k, v := range userDir {
-		fmt.Printf("[%s]:%s \n", k, v)
-	}
+	// for k, v := range userDir {
+	//     fmt.Printf("[%s]:%s \n", k, v)
+	// }
 	// 判断是否支持自动获取数据目录（version是否在SupportAutoGetDataVersionList列表中）
 	if !IsSupportAutoGetData(wechatData.Version) {
 		fmt.Println("不支持自动获取数据目录")
@@ -223,6 +223,22 @@ func main() {
 	}
 	// 获取用户数据目录，拼接成绝对路径
 	dataDir := filepath.Join(wechatRoot, dataDirName)
+	// 判断目录是否存在如果不存，要求用户从userDir中选择一个目录
+	_, err = os.Stat(dataDir)
+	if err != nil {
+		fmt.Println("数据目录不存在，请从下面选择一个目录")
+		for k, v := range userDir {
+			fmt.Printf("[%s]:%s \n", k, v)
+		}
+		var input string
+		fmt.Scanln(&input)
+		// 判断输入是否合法
+		if _, ok := userDir[input]; !ok {
+			fmt.Println("输入错误")
+			return
+		}
+		dataDir = userDir[input]
+	}
 	fmt.Println("WeChat DataDir: ", dataDir)
 	// 复制聊天记录文件到缓存目录dataDir + \Msg\Multi
 	err = CopyMsgDb(filepath.Join(dataDir, "Msg", "Multi"))
@@ -239,6 +255,12 @@ func main() {
 	err = DecryptDb(wechatData.Key)
 	if err != nil {
 		fmt.Println("DecryptDb error: ", err)
+		return
+	}
+	// 清理缓存目录
+	err = os.RemoveAll(CurrentPath + "\\tmp")
+	if err != nil {
+		fmt.Println("RemoveAll error: ", err)
 		return
 	}
 
