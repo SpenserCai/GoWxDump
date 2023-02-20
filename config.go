@@ -3,7 +3,7 @@
  * @Date: 2023-02-20 10:36:15
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-20 10:39:49
+ * @LastEditTime: 2023-02-20 18:20:19
  * @Description: file content
  */
 package main
@@ -12,11 +12,14 @@ import "golang.org/x/sys/windows"
 
 // 定义微信数据结构
 type WeChatData struct {
-	Version  string
-	NickName string
-	Account  string
-	Mobile   string
-	Key      string
+	Version        string
+	NickName       string
+	Account        string
+	Mobile         string
+	Key            string
+	WeChatProcess  windows.ProcessEntry32
+	WeChatHandle   windows.Handle
+	WeChatWinModel windows.ModuleEntry32
 }
 
 var PROCESS_ALL_ACCESS = uint32(
