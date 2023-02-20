@@ -3,7 +3,7 @@
  * @Date: 2023-02-17 14:14:40
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-20 12:19:40
+ * @LastEditTime: 2023-02-20 16:00:09
  * @Description: file content
  */
 package main
@@ -114,12 +114,57 @@ func CopyMsgDb(dataDir string) error {
 				return err
 			}
 		}
+		// 复制MicroMsg.db到tmp目录
+		if ok, _ := filepath.Match("MicroMsg.db", info.Name()); ok {
+			err = CopyFile(path, CurrentPath+"\\tmp\\"+info.Name())
+			if err != nil {
+				return err
+			}
+		}
 		return nil
 	})
 	if err != nil {
 		return err
 	}
+	// 如果不存在decrypted目录则创建
+	_, err = os.Stat(CurrentPath + "\\decrypted")
+	if err != nil {
+		err = os.Mkdir(CurrentPath+"\\decrypted", os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
 
+	return nil
+}
+
+func DecryptDb(key string) error {
+	// 判断tmp目录是否存在
+	_, err := os.Stat(CurrentPath + "\\tmp")
+	if err != nil {
+		return err
+	}
+	// 判断decrypted目录是否存在
+	_, err = os.Stat(CurrentPath + "\\decrypted")
+	if err != nil {
+		return err
+	}
+	// 正则匹配，将所有MSG数字.db文件解密到decrypted目录，不扫描子目录
+	err = filepath.Walk(CurrentPath+"\\tmp", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if ok, _ := filepath.Match("*.db", info.Name()); ok {
+			err = Decrypt(key, path, CurrentPath+"\\decrypted\\"+info.Name())
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -183,6 +228,17 @@ func main() {
 	err = CopyMsgDb(filepath.Join(dataDir, "Msg", "Multi"))
 	if err != nil {
 		fmt.Println("CopyMsgDb error: ", err)
+		return
+	}
+	err = CopyMsgDb(filepath.Join(dataDir, "Msg"))
+	if err != nil {
+		fmt.Println("CopyMicroMsgDb error: ", err)
+		return
+	}
+	// 解密tmp目录下的所有.db文件，解密后的文件放在decrypted目录下
+	err = DecryptDb(wechatData.Key)
+	if err != nil {
+		fmt.Println("DecryptDb error: ", err)
 		return
 	}
 
