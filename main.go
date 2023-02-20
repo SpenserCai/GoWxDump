@@ -3,17 +3,28 @@
  * @Date: 2023-02-17 14:14:40
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-20 11:57:23
+ * @LastEditTime: 2023-02-20 12:19:40
  * @Description: file content
  */
 package main
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 
 	"golang.org/x/sys/windows"
 )
+
+// 获取程序内运行的目录
+var CurrentPath = func() string {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		return ""
+	}
+	return dir
+}()
 
 func GetWeChatInfo(wechatProcessHandle windows.Handle, module windows.ModuleEntry32) (WeChatData, error) {
 	// 初始化WeChatData
@@ -50,6 +61,66 @@ func GetWeChatInfo(wechatProcessHandle windows.Handle, module windows.ModuleEntr
 	wechatData.Mobile = mobile
 	wechatData.Key = key
 	return wechatData, nil
+}
+
+func CopyFile(src, dst string) error {
+	// 判断源文件是否存在
+	_, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	// 读取源文件
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+	// 创建目标文件
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+	// 拷贝文件
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CopyMsgDb(dataDir string) error {
+	// 判断目录是否存在
+	_, err := os.Stat(dataDir)
+	if err != nil {
+		return err
+	}
+	// 判断运行目录是否存在tmp目录没有则创建
+	_, err = os.Stat(CurrentPath + "\\tmp")
+	if err != nil {
+		err = os.Mkdir(CurrentPath+"\\tmp", os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+	// 正则匹配，将所有MSG数字.db文件拷贝到tmp目录，不扫描子目录
+	err = filepath.Walk(dataDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if ok, _ := filepath.Match("MSG*.db", info.Name()); ok {
+			err = CopyFile(path, CurrentPath+"\\tmp\\"+info.Name())
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func main() {
@@ -108,5 +179,11 @@ func main() {
 	// 获取用户数据目录，拼接成绝对路径
 	dataDir := filepath.Join(wechatRoot, dataDirName)
 	fmt.Println("WeChat DataDir: ", dataDir)
+	// 复制聊天记录文件到缓存目录dataDir + \Msg\Multi
+	err = CopyMsgDb(filepath.Join(dataDir, "Msg", "Multi"))
+	if err != nil {
+		fmt.Println("CopyMsgDb error: ", err)
+		return
+	}
 
 }
