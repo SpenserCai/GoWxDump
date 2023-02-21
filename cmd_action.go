@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func GetWeChatInfo() error {
@@ -132,9 +133,14 @@ func FriendsListCmd() {
 		fmt.Println("GetNearChatFriends error: ", err)
 		return
 	}
+	// fmt.Println(nearChatList)
 	// 如果NearChatList不为空
 	if len(nearChatList) > 0 {
-		userList, err := weChatDb.GetFriendInfoListWithUserList(nearChatList)
+		userNameList := make([]string, 0)
+		for _, v := range nearChatList {
+			userNameList = append(userNameList, v.Username)
+		}
+		userList, err := weChatDb.GetFriendInfoListWithUserList(userNameList)
 		if err != nil {
 			fmt.Println("GetFriendInfoListWithUserList error: ", err)
 			return
@@ -143,8 +149,9 @@ func FriendsListCmd() {
 		for _, v := range nearChatList {
 			// 找到userList中Alias为v的元素
 			for _, v1 := range userList {
-				if v1.UserName == v {
-					fmt.Printf("NickName: %s \nRemark: %s \nAlias: %s \nUserName: %s \n-------------------------------- \n", v1.NickName, v1.Remark, v1.Alias, v1.UserName)
+				if v1.UserName == v.Username {
+					lastTime := time.Unix(v.LastReadedCreateTime/1000, 0).Format("2006-01-02 15:04:05")
+					fmt.Printf("NickName: %s \nRemark: %s \nAlias: %s \nUserName: %s \nLastTime: %s\n-------------------------------- \n", v1.NickName, v1.Remark, v1.Alias, v1.UserName, lastTime)
 					break
 				}
 			}

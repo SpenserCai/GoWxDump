@@ -3,7 +3,7 @@
  * @Date: 2023-02-21 11:35:50
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-21 14:02:29
+ * @LastEditTime: 2023-02-21 14:59:42
  * @Description: file content
  */
 package db
@@ -20,6 +20,12 @@ type FriendInfo struct {
 	Alias    string
 	UserName string
 	Remark   string
+}
+
+type ChatInfo struct {
+	Username             string
+	LastReadedSvrId      int64
+	LastReadedCreateTime int64
 }
 
 // 创建一个数据库操作对象
@@ -58,14 +64,14 @@ func (w *WeChatDb) Close() error {
 }
 
 // 查询最近聊天的好友
-func (w *WeChatDb) GetNearChatFriends(topNumber int) ([]string, error) {
+func (w *WeChatDb) GetNearChatFriends(topNumber int) ([]ChatInfo, error) {
 	// 查询ChatInfo表，UserName中不含有@的，LastReadedCreateTime最大的前topNumber条记录，只需要UserName字段
-	var userNameList []string
-	err := w.Db.Table("ChatInfo").Select("UserName").Where("UserName NOT LIKE ?", "%@%").Order("LastReadedCreateTime DESC").Limit(topNumber).Find(&userNameList).Error
+	var chatInfoList []ChatInfo
+	err := w.Db.Table("ChatInfo").Where("UserName NOT LIKE ?", "%@%").Order("LastReadedCreateTime DESC").Limit(topNumber).Find(&chatInfoList).Error
 	if err != nil {
 		return nil, err
 	}
-	return userNameList, nil
+	return chatInfoList, nil
 }
 
 // 通过UserName列表查询好友详细信息
