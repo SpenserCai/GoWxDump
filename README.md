@@ -3,7 +3,7 @@
  * @Date: 2023-02-17 18:04:27
  * @version: 
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-21 15:28:09
+ * @LastEditTime: 2023-02-21 15:46:31
  * @Description: file content
 -->
 # GoWxDump
@@ -16,10 +16,9 @@ GoWxDump是<a href="https://github.com/AdminTest0/SharpWxDump">SharpWxDump</a>�
 git clone https://github.com/SpenserCai/GoWxDump.git
 ```
 ### 2.编译
+需要安装mingw-w32
 ```
-go mod tidy
-set GOARCH=386
-go build
+build.bat
 ```
 ### 3.使用
 ```
