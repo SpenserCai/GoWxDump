@@ -159,3 +159,84 @@ func GetWeChatUserDir(wechatRoot string) (map[string]string, error) {
 	}
 	return userDir, nil
 }
+
+// 解密微信数据库
+func DecryptDb(key string) error {
+	// 判断tmp目录是否存在
+	_, err := os.Stat(CurrentPath + "\\tmp")
+	if err != nil {
+		return err
+	}
+	// 判断decrypted目录是否存在
+	_, err = os.Stat(CurrentPath + "\\decrypted")
+	if err != nil {
+		return err
+	}
+	// 正则匹配，将所有MSG数字.db文件解密到decrypted目录，不扫描子目录
+	err = filepath.Walk(CurrentPath+"\\tmp", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if ok, _ := filepath.Match("*.db", info.Name()); ok {
+			err = Decrypt(key, path, CurrentPath+"\\decrypted\\"+info.Name())
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// 复制微信的数据文件
+func CopyMsgDb(dataDir string) error {
+	// 判断目录是否存在
+	_, err := os.Stat(dataDir)
+	if err != nil {
+		return err
+	}
+	// 判断运行目录是否存在tmp目录没有则创建
+	_, err = os.Stat(CurrentPath + "\\tmp")
+	if err != nil {
+		err = os.Mkdir(CurrentPath+"\\tmp", os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+	// 正则匹配，将所有MSG数字.db文件拷贝到tmp目录，不扫描子目录
+	err = filepath.Walk(dataDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if ok, _ := filepath.Match("MSG*.db", info.Name()); ok {
+			err = CopyFile(path, CurrentPath+"\\tmp\\"+info.Name())
+			if err != nil {
+				return err
+			}
+		}
+		// 复制MicroMsg.db到tmp目录
+		if ok, _ := filepath.Match("MicroMsg.db", info.Name()); ok {
+			err = CopyFile(path, CurrentPath+"\\tmp\\"+info.Name())
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	// 如果不存在decrypted目录则创建
+	_, err = os.Stat(CurrentPath + "\\decrypted")
+	if err != nil {
+		err = os.Mkdir(CurrentPath+"\\decrypted", os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

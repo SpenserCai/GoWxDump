@@ -3,7 +3,7 @@
  * @Date: 2023-02-20 16:23:37
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-20 17:15:46
+ * @LastEditTime: 2023-02-21 11:16:54
  * @Description: file content
  */
 package main
@@ -16,9 +16,10 @@ import (
 )
 
 var suggestions = []prompt.Suggest{
-	{Text: "get_info", Description: "获取微信基础信息"},
+	{Text: "show_info", Description: "获取微信基础信息"},
 	{Text: "decrypt", Description: "解密数据"},
 	{Text: "friends_list", Description: "获取好友列表"},
+	{Text: "help", Description: "帮助"},
 	{Text: "exit", Description: "退出程序"},
 }
 
@@ -37,12 +38,17 @@ func executor(cmd string) {
 		return
 	}
 	switch blocks[0] {
-	case "get_info":
-		fmt.Println("get_info")
+	case "show_info":
+		ShowInfoCmd()
 	case "decrypt":
-		fmt.Println("decrypt")
+		DecryptCmd()
 	case "friends_list":
 		fmt.Println("friends_list")
+	case "help":
+		// 显示命令的帮助信息
+		for _, v := range suggestions {
+			fmt.Println(v.Text, v.Description)
+		}
 	case "exit":
 		// 退出命令模式并关闭程序
 		return
