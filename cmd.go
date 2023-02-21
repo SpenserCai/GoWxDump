@@ -3,7 +3,7 @@
  * @Date: 2023-02-20 16:23:37
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-21 11:16:54
+ * @LastEditTime: 2023-02-21 12:16:13
  * @Description: file content
  */
 package main
@@ -43,7 +43,7 @@ func executor(cmd string) {
 	case "decrypt":
 		DecryptCmd()
 	case "friends_list":
-		fmt.Println("friends_list")
+		FriendsListCmd()
 	case "help":
 		// 显示命令的帮助信息
 		for _, v := range suggestions {

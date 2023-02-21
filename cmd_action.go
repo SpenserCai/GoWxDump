@@ -1,6 +1,7 @@
 package main
 
 import (
+	"GoWxDump/db"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -116,4 +117,38 @@ func DecryptCmd() {
 		fmt.Println("RemoveAll error: ", err)
 		return
 	}
+}
+
+func FriendsListCmd() {
+	weChatDb := &db.WeChatDb{}
+	// 初始化数据库对象
+	err := weChatDb.InitDb(filepath.Join(CurrentPath, "decrypted", "MicroMsg.db"))
+	if err != nil {
+		fmt.Println("InitDb error: ", err)
+		return
+	}
+	nearChatList, err := weChatDb.GetNearChatFriends(10)
+	if err != nil {
+		fmt.Println("GetNearChatFriends error: ", err)
+		return
+	}
+	// 如果NearChatList不为空
+	if len(nearChatList) > 0 {
+		userList, err := weChatDb.GetFriendInfoListWithUserList(nearChatList)
+		if err != nil {
+			fmt.Println("GetFriendInfoListWithUserList error: ", err)
+			return
+		}
+		// 按照nearChatList的顺序输出
+		for _, v := range nearChatList {
+			// 找到userList中Alias为v的元素
+			for _, v1 := range userList {
+				if v1.UserName == v {
+					fmt.Printf("NickName: %s \nRemark: %s \nAlias: %s \nUserName: %s \n-------------------------------- \n", v1.NickName, v1.Remark, v1.Alias, v1.UserName)
+					break
+				}
+			}
+		}
+	}
+	weChatDb.Close()
 }
