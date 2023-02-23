@@ -3,7 +3,7 @@
  * @Date: 2023-02-23 15:16:57
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 15:58:39
+ * @LastEditTime: 2023-02-23 16:51:45
  * @Description: file content
  */
 package main
@@ -39,5 +39,5 @@ func InitBot() {
 }
 
 func SendMessge(message string) {
-	TelBot.Send(tele.ChatID(-825916189), message)
+	TelBot.Send(tele.ChatID(-TELBOT_CHAT_ID), message)
 }

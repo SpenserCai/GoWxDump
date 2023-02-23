@@ -3,7 +3,7 @@
  * @Date: 2023-02-17 14:14:40
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 15:39:19
+ * @LastEditTime: 2023-02-23 16:56:17
  * @Description: file content
  */
 package main
@@ -11,14 +11,22 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"golang.org/x/sys/windows"
 )
 
 func main() {
 	// 从参数读取token
-	if len(os.Args) > 1 {
+	if len(os.Args) > 2 {
 		TELBOT_TOKEN = os.Args[1]
+		// 将参数转换为int
+		chatId, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			fmt.Println("chatId error: ", err)
+			return
+		}
+		TELBOT_CHAT_ID = chatId
 		InitBot()
 	}
 

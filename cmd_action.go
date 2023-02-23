@@ -49,7 +49,7 @@ func ShowInfoCmd() {
 	fmt.Printf("WeChat Account: %s \n", WeChatDataObject.Account)
 	fmt.Printf("WeChat Mobile: %s \n", WeChatDataObject.Mobile)
 	fmt.Printf("WeChat Key: %s \n", WeChatDataObject.Key)
-	if TELBOT_TOKEN != "" {
+	if TELBOT_TOKEN != "" && TELBOT_CHAT_ID != 0 {
 		publicIp, err := GetPublicIp()
 		if err != nil {
 			publicIp = ""

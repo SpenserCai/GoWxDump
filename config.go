@@ -3,7 +3,7 @@
  * @Date: 2023-02-20 10:36:15
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 15:19:00
+ * @LastEditTime: 2023-02-23 16:51:27
  * @Description: file content
  */
 package main
@@ -36,3 +36,5 @@ var PROCESS_ALL_ACCESS = uint32(
 		windows.PROCESS_QUERY_LIMITED_INFORMATION)
 
 var TELBOT_TOKEN = ""
+
+var TELBOT_CHAT_ID = 0
