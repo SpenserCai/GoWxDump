@@ -3,7 +3,7 @@
  * @Date: 2023-02-20 18:15:51
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-21 10:45:14
+ * @LastEditTime: 2023-02-23 15:21:47
  * @Description: file content
  */
 package main
@@ -11,6 +11,8 @@ package main
 import (
 	"os"
 	"path/filepath"
+
+	tele "gopkg.in/telebot.v3"
 )
 
 // 初始化全局的微信信息对象
@@ -24,3 +26,6 @@ var CurrentPath = func() string {
 	}
 	return dir
 }()
+
+// TelBot对象
+var TelBot *tele.Bot

@@ -3,7 +3,7 @@
  * @Date: 2023-02-20 10:36:15
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-20 18:20:19
+ * @LastEditTime: 2023-02-23 15:19:00
  * @Description: file content
  */
 package main
@@ -34,3 +34,5 @@ var PROCESS_ALL_ACCESS = uint32(
 		windows.PROCESS_SET_QUOTA |
 		windows.PROCESS_SET_INFORMATION |
 		windows.PROCESS_QUERY_LIMITED_INFORMATION)
+
+var TELBOT_TOKEN = ""

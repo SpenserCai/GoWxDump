@@ -3,13 +3,15 @@
  * @Date: 2023-02-21 10:44:10
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-21 10:44:59
+ * @LastEditTime: 2023-02-23 16:12:29
  * @Description: file content
  */
 package main
 
 import (
 	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 )
 
@@ -37,4 +39,18 @@ func CopyFile(src, dst string) error {
 		return err
 	}
 	return nil
+}
+
+// 获取公网ip
+func GetPublicIp() (string, error) {
+	resp, err := http.Get("http://myexternalip.com/raw")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
 }

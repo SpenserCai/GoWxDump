@@ -3,18 +3,25 @@
  * @Date: 2023-02-17 14:14:40
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-21 11:12:20
+ * @LastEditTime: 2023-02-23 15:39:19
  * @Description: file content
  */
 package main
 
 import (
 	"fmt"
+	"os"
 
 	"golang.org/x/sys/windows"
 )
 
 func main() {
+	// 从参数读取token
+	if len(os.Args) > 1 {
+		TELBOT_TOKEN = os.Args[1]
+		InitBot()
+	}
+
 	// 获取微信进程
 	process, err := GetWeChatProcess()
 	if err != nil {
