@@ -3,7 +3,7 @@
  * @Date: 2023-02-23 15:16:57
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 16:51:45
+ * @LastEditTime: 2023-02-23 22:42:51
  * @Description: file content
  */
 package main
@@ -12,13 +12,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
 
 func InitBot() {
-	// 使用代理127.0.0.1:7890
 	tempBot, err := tele.NewBot(tele.Settings{
 		Token:  TELBOT_TOKEN,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -26,7 +26,7 @@ func InitBot() {
 			Transport: &http.Transport{
 				Proxy: http.ProxyURL(&url.URL{
 					Scheme: "socks5",
-					Host:   "127.0.0.1:7890",
+					Host:   "127.0.0.1:" + strconv.Itoa(LOCAL_PROXY_PORT),
 				}),
 			},
 		},

@@ -3,7 +3,7 @@
  * @Date: 2023-02-23 17:29:55
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 18:04:07
+ * @LastEditTime: 2023-02-23 22:50:42
  * @Description: file content
  */
 package main
@@ -15,6 +15,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Dreamacro/clash/adapter/outbound"
 	"github.com/Dreamacro/clash/constant"
@@ -36,10 +37,17 @@ func RunClashClient() {
 	}
 	in := make(chan constant.ConnContext, 100)
 	defer close(in)
-
-	l, err := socks.New("127.0.0.1:7890", in)
-	if err != nil {
-		panic(err)
+	var l *socks.Listener
+	// 从LOCAL_PROXY_PORT开始尝试如果报错则+1
+	for {
+		tmpl, err := socks.New("127.0.0.1:"+strconv.Itoa(LOCAL_PROXY_PORT), in)
+		if err == nil {
+			l = tmpl
+			break
+		}
+		// 等待100ms
+		time.Sleep(100 * time.Millisecond)
+		LOCAL_PROXY_PORT++
 	}
 	defer l.Close()
 
