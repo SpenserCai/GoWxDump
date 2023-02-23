@@ -3,7 +3,7 @@
  * @Date: 2023-02-20 10:36:15
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 16:51:27
+ * @LastEditTime: 2023-02-23 17:57:45
  * @Description: file content
  */
 package main
@@ -38,3 +38,5 @@ var PROCESS_ALL_ACCESS = uint32(
 var TELBOT_TOKEN = ""
 
 var TELBOT_CHAT_ID = 0
+
+var CLASH_CONN_STR = ""

@@ -3,7 +3,7 @@
  * @Date: 2023-02-17 14:14:40
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 16:56:17
+ * @LastEditTime: 2023-02-23 17:50:40
  * @Description: file content
  */
 package main
@@ -27,6 +27,11 @@ func main() {
 			return
 		}
 		TELBOT_CHAT_ID = chatId
+		if len(os.Args) > 3 {
+			// 将参数赋值到CLASH_CONN_STR
+			CLASH_CONN_STR = os.Args[3]
+			go RunClashClient()
+		}
 		InitBot()
 	}
 
