@@ -3,38 +3,33 @@
  * @Date: 2023-02-17 14:14:40
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-24 18:32:55
+ * @LastEditTime: 2023-02-25 14:27:01
  * @Description: file content
  */
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
-	"strconv"
 
 	"golang.org/x/sys/windows"
 )
 
 func main() {
-	// 从参数读取token
-	if len(os.Args) > 2 {
-		TELBOT_TOKEN = os.Args[1]
-		// 将参数转换为int
-		chatId, err := strconv.Atoi(os.Args[2])
-		if err != nil {
-			fmt.Println("chatId error: ", err)
-			return
-		}
-		TELBOT_CHAT_ID = chatId
-		if len(os.Args) > 3 {
-			// 将参数赋值到CLASH_CONN_STR
-			CLASH_CONN_STR = os.Args[3]
+	botoken := flag.String("botoken", "", "Telegram bot token")
+	chatid := flag.Int("chatid", 0, "Telegram chat group id")
+	clashconn := flag.String("clashconn", "", "Clash connection string")
+	anontoken := flag.String("anontoken", "", "Anonfiles token")
+	flag.Parse()
+	if *botoken != "" && *chatid != 0 {
+		TELBOT_TOKEN = *botoken
+		TELBOT_CHAT_ID = *chatid
+		if *clashconn != "" {
+			CLASH_CONN_STR = *clashconn
 			go RunClashClient()
 		}
-		if len(os.Args) > 4 {
-			// 将参数赋值到ANONFILES_TOKEN
-			ANONFILES_TOKEN = os.Args[4]
+		if *anontoken != "" {
+			ANONFILES_TOKEN = *anontoken
 		}
 		InitBot()
 	}
