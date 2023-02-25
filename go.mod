@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/Dreamacro/clash v1.13.0
 	github.com/c-bata/go-prompt v0.2.6
+	github.com/mitchellh/mapstructure v1.5.0
 	golang.org/x/crypto v0.6.0
 	golang.org/x/sys v0.5.0
 	gopkg.in/telebot.v3 v3.1.2

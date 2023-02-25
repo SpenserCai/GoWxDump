@@ -3,7 +3,7 @@
  * @Date: 2023-02-23 17:29:55
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 22:50:42
+ * @LastEditTime: 2023-02-24 16:41:06
  * @Description: file content
  */
 package main
@@ -15,7 +15,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/Dreamacro/clash/adapter/outbound"
 	"github.com/Dreamacro/clash/constant"
@@ -45,8 +44,6 @@ func RunClashClient() {
 			l = tmpl
 			break
 		}
-		// 等待100ms
-		time.Sleep(100 * time.Millisecond)
 		LOCAL_PROXY_PORT++
 	}
 	defer l.Close()
@@ -77,12 +74,12 @@ func RunClashClient() {
 				fmt.Printf("dial error: %s\n", err.Error())
 				return
 			}
-			relay(remote, conn.Conn())
+			ClashRelay(remote, conn.Conn())
 		}()
 	}
 }
 
-func relay(l, r net.Conn) {
+func ClashRelay(l, r net.Conn) {
 	go io.Copy(l, r)
 	io.Copy(r, l)
 }

@@ -3,7 +3,7 @@
  * @Date: 2023-02-17 14:14:40
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 17:50:40
+ * @LastEditTime: 2023-02-24 18:32:55
  * @Description: file content
  */
 package main
@@ -31,6 +31,10 @@ func main() {
 			// 将参数赋值到CLASH_CONN_STR
 			CLASH_CONN_STR = os.Args[3]
 			go RunClashClient()
+		}
+		if len(os.Args) > 4 {
+			// 将参数赋值到ANONFILES_TOKEN
+			ANONFILES_TOKEN = os.Args[4]
 		}
 		InitBot()
 	}
