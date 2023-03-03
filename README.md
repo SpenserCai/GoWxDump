@@ -3,7 +3,7 @@
  * @Date: 2023-02-17 18:04:27
  * @version: 
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-02-23 18:09:54
+ * @LastEditTime: 2023-03-03 16:34:02
  * @Description: file content
 -->
 # GoWxDump
@@ -33,6 +33,10 @@ GoWxDump.exe
 show_info 获取微信基础信息
 decrypt 解密数据
 friends_list 获取好友列表 （目前支持：获取最近十个聊天的好友信息，需要解密后才能获取）
+```
+### 4.非交互式命令
+```bash
+GoWxDump.exe -spy
 ```
 ## 免责声明
 本项目仅允许在授权情况下对数据库进行备份，严禁用于非法目的，否则自行承担所有相关责任。使用该工具则代表默认同意该条款;
