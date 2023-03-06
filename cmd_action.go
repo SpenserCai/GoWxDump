@@ -2,6 +2,7 @@ package main
 
 import (
 	"GoWxDump/db"
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -79,20 +80,35 @@ func DecryptCmd() {
 	// 判断目录是否存在如果不存，要求用户从userDir中选择一个目录
 	_, err = os.Stat(dataDir)
 	if err != nil {
-		fmt.Println("物资自动识别，请从下面选择一个目录")
+		fmt.Println("无法自动识别，请从下面选择一个id，或手动输入完整路径")
 		for k, v := range userDir {
 			fmt.Printf("[%s]:%s \n", k, v)
 		}
 		var input string
 		// 提示输入
 		fmt.Print("请选择上述id中的一个:")
-		fmt.Scanln(&input)
+		reader := bufio.NewReader(os.Stdin)
+		tInput, _, _ := reader.ReadLine()
+		input = string(tInput)
 		// 判断输入是否合法
 		if _, ok := userDir[input]; !ok {
-			fmt.Println("输入错误")
-			return
+			// 判断目录是否存在
+			fmt.Println(input)
+			_, err = os.Stat(input)
+			if err != nil {
+				fmt.Println("目录不存在")
+				return
+			}
+			// 判断输入的目录中是否存在Msg目录
+			_, err = os.Stat(filepath.Join(input, "Msg", "Multi"))
+			if err != nil {
+				fmt.Println("非微信目录")
+				return
+			}
+			dataDir = input
+		} else {
+			dataDir = userDir[input]
 		}
-		dataDir = userDir[input]
 	}
 	fmt.Println("WeChat DataDir: ", dataDir)
 	// 复制聊天记录文件到缓存目录dataDir + \Msg\Multi
@@ -178,9 +194,9 @@ func SendToTelegramCmd() {
 				return nil
 			}
 			// 如果不是MicroMsg.db则跳过
-			if info.Name() != "hello.db" && info.Name() != "word.db" {
-				return nil
-			}
+			// if info.Name() != "hello.db" && info.Name() != "word.db" {
+			// 	return nil
+			// }
 			if !info.IsDir() {
 				fileList = append(fileList, path)
 			}
