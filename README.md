@@ -7,6 +7,8 @@
  * @Description: file content
 -->
 # GoWxDump
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSpenserCai%2FGoWxDump.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FSpenserCai%2FGoWxDump?ref=badge_shield)
+
 ## 特别说明
 GoWxDump是<a href="https://github.com/AdminTest0/SharpWxDump">SharpWxDump</a>的Go语言版本。
 同时添加了一些新的功能。
@@ -42,3 +44,6 @@ GoWxDump.exe -spy
 本项目仅允许在授权情况下对数据库进行备份，严禁用于非法目的，否则自行承担所有相关责任。使用该工具则代表默认同意该条款;
 
 请勿利用本项目的相关技术从事非法测试，如因此产生的一切不良后果与项目作者无关。
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSpenserCai%2FGoWxDump.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FSpenserCai%2FGoWxDump?ref=badge_large)
