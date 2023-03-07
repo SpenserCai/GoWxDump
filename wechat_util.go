@@ -84,14 +84,16 @@ func GetWeChatData(process windows.Handle, offset uintptr, nSize int) (string, e
 	if err != nil {
 		return "", err
 	}
-	text := ""
+	// 声明一个字节数组，暂时为空
+	var textBytes []byte = nil
 	for _, v := range buffer {
 		if v == 0 {
 			break
 		}
-		text += string(v)
+		textBytes = append(textBytes, v)
 	}
-	return text, nil
+	// 返回utf8编码的字符串
+	return string(textBytes), nil
 }
 
 // 获取微信key：入参为微信进程句柄，偏移地址，返回值为key和错误信息
