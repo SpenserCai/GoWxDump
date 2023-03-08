@@ -3,11 +3,12 @@
  * @Date: 2023-02-17 18:04:27
  * @version: 
  * @LastEditors: SpenserCai
- * @LastEditTime: 2023-03-03 16:34:02
+ * @LastEditTime: 2023-03-08 14:21:28
  * @Description: file content
 -->
 # GoWxDump
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSpenserCai%2FGoWxDump.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FSpenserCai%2FGoWxDump?ref=badge_shield)
+[![Discord](https://discordapp.com/api/guilds/1082909442481344572/widget.png?style=shield)](https://discord.gg/KCftHHM2xk)
 
 ## 特别说明
 GoWxDump是<a href="https://github.com/AdminTest0/SharpWxDump">SharpWxDump</a>的Go语言版本。
