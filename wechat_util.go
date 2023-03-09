@@ -9,6 +9,8 @@ import (
 	"strings"
 	"unsafe"
 
+	"golang.org/x/sys/windows/registry"
+
 	"golang.org/x/sys/windows"
 )
 
@@ -118,14 +120,41 @@ func GetWeChatKey(process windows.Handle, offset uintptr) (string, error) {
 
 }
 
-func GetWeChatDir() (string, error) {
-	// 获取%USERPROFILE%/Documents目录
-	profile, err := os.UserHomeDir()
+func GetWeChatFromRegistry() (string, error) {
+	// 打开注册表的微信路径：HKEY_CURRENT_USER\Software\Tencent\WeChat\FileSavePath
+	key, err := registry.OpenKey(registry.CURRENT_USER, `Software\Tencent\WeChat`, registry.QUERY_VALUE)
 	if err != nil {
 		return "", err
 	}
-	// 获取微信消息目录
-	msgDir := filepath.Join(profile, "Documents", "WeChat Files")
+	defer key.Close()
+	//获取key的值
+	value, _, err := key.GetStringValue("FileSavePath")
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+
+}
+
+func GetWeChatDir() (string, error) {
+	msgDir := ""
+	wDir, err := GetWeChatFromRegistry()
+	if err != nil {
+		return "", err
+	}
+	// 如果wDir为MyDocument:
+	if wDir == "MyDocument:" {
+		// 获取%USERPROFILE%/Documents目录
+		profile, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		// 获取微信消息目录
+		msgDir = filepath.Join(profile, "Documents", "WeChat Files")
+	} else {
+		// 获取微信消息目录
+		msgDir = filepath.Join(wDir, "WeChat Files")
+	}
 	// 判断目录是否存在
 	_, err = os.Stat(msgDir)
 	if err != nil {
