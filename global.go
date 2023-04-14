@@ -25,7 +25,7 @@ type WeChatData struct {
 	Key            string
 	WeChatProcess  windows.ProcessEntry32
 	WeChatHandle   windows.Handle
-	WeChatWinModel windows.ModuleEntry32
+	WeChatWinModel *ModuleInfo
 }
 
 var PROCESS_ALL_ACCESS = uint32(

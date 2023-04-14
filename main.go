@@ -52,7 +52,7 @@ func main() {
 	WeChatDataObject.WeChatHandle = wechatProcessHandle
 
 	// 获取微信模块
-	module, err := GetWeChatWinModule(process)
+	module, err := GetWeChatWinModule(wechatProcessHandle)
 	if err != nil {
 		fmt.Println("GetWeChatWinModule error: ", err)
 		return

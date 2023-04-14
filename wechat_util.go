@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
+	"unicode/utf16"
 	"unsafe"
 
 	"golang.org/x/sys/windows/registry"
@@ -34,29 +36,78 @@ func GetWeChatProcess() (windows.ProcessEntry32, error) {
 	}
 }
 
+type ModuleInfo struct {
+	BaseOfDll   uintptr
+	SizeOfImage uint32
+	EntryPoint  uintptr
+	ExePath     string
+}
+
+var (
+	kernel32             = syscall.NewLazyDLL("kernel32.dll")
+	getModuleFileName    = kernel32.NewProc("GetModuleBaseNameW")
+	psapi                = syscall.NewLazyDLL("psapi.dll")
+	enumProcessModules   = psapi.NewProc("EnumProcessModules")
+	enumProcessModulesEx = psapi.NewProc("EnumProcessModulesEx")
+	getModuleInformation = psapi.NewProc("GetModuleInformation")
+	getModuleFileNameExW = psapi.NewProc("GetModuleFileNameExW")
+	createProcessA       = kernel32.NewProc("CreateProcessA")
+)
+
 // 获取微信进程的WeChatWin.dll模块对象，包含模块基址、模块大小和模块路径()
-func GetWeChatWinModule(process windows.ProcessEntry32) (windows.ModuleEntry32, error) {
-	var module windows.ModuleEntry32
-	module.Size = uint32(unsafe.Sizeof(module))
-	snapshot, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPMODULE, process.ProcessID)
-	if err != nil {
-		return module, err
+func GetWeChatWinModule(process windows.Handle) (*ModuleInfo, error) {
+	var (
+		hmods  [1024]uintptr
+		nbytes uint32
+		nmods  int
+	)
+	if ok, _, err := enumProcessModulesEx.Call(
+		uintptr(process),
+		uintptr(unsafe.Pointer(&hmods)),
+		uintptr(len(hmods)),
+		uintptr(unsafe.Pointer(&nbytes)),
+		uintptr(windows.LIST_MODULES_ALL),
+	); ok == 0 {
+		return nil, err
 	}
-	defer windows.CloseHandle(snapshot)
-	for {
-		err = windows.Module32Next(snapshot, &module)
-		if err != nil {
-			return module, err
+	nmods = int(nbytes) / int(unsafe.Sizeof(hmods[0]))
+	if nmods > len(hmods) {
+		nmods = len(hmods)
+	}
+
+	//var filename [syscall.MAX_LONG_PATH]uint16
+	var filename [260]uint16
+	var info ModuleInfo
+	for i := 1; i < nmods; i++ {
+		n, _, _ := getModuleFileNameExW.Call(
+			uintptr(process),
+			hmods[i],
+			uintptr(unsafe.Pointer(&filename)),
+			unsafe.Sizeof(filename),
+		)
+		if n == 0 {
+			panic(fmt.Sprintf("GetModuleInformation() failed"))
 		}
-		if windows.UTF16ToString(module.Module[:]) == "WeChatWin.dll" {
-			return module, nil
+		//fmt.Println(string(utf16.Decode(filename[:n])))
+		if strings.Contains(string(utf16.Decode(filename[:n])), "WeChatWin") {
+			ret, _, _ := getModuleInformation.Call(
+				uintptr(process),
+				hmods[i],
+				uintptr(unsafe.Pointer(&info)), unsafe.Sizeof(info),
+			)
+			if ret == 0 {
+				panic(fmt.Sprintf("GetModuleInformation() failed"))
+			}
+			info.ExePath = string(utf16.Decode(filename[:n]))
+			return &info, nil
 		}
 	}
+	return nil, fmt.Errorf("There are no more files. No WeChatWin.dll")
 }
 
 // 通过模块获取版本号 c#代码为：string FileVersion = processModule.FileVersionInfo.FileVersion;转成go代码如下
-func GetVersion(module windows.ModuleEntry32) (string, error) {
-	image, imgErr := windows.LoadLibraryEx(windows.UTF16ToString(module.ExePath[:]), 0, windows.LOAD_LIBRARY_AS_DATAFILE)
+func GetVersion(module *ModuleInfo) (string, error) {
+	image, imgErr := windows.LoadLibraryEx(module.ExePath, 0, windows.LOAD_LIBRARY_AS_DATAFILE)
 	if imgErr != nil {
 		return "", fmt.Errorf("LoadLibraryEx error: %v", imgErr)
 	}
