@@ -139,9 +139,6 @@ func GetWeChatFromRegistry() (string, error) {
 func GetWeChatDir() (string, error) {
 	msgDir := ""
 	wDir, err := GetWeChatFromRegistry()
-	if err != nil {
-		return "", err
-	}
 	// 如果wDir为MyDocument:
 	if wDir == "MyDocument:" {
 		// 获取%USERPROFILE%/Documents目录
@@ -158,7 +155,15 @@ func GetWeChatDir() (string, error) {
 	// 判断目录是否存在
 	_, err = os.Stat(msgDir)
 	if err != nil {
-		return "", err
+		// 手动输入目录
+		fmt.Print("输入WeChat Files所在目录路径（如d:\\documents）：")
+		fmt.Scanln(&msgDir)
+		msgDir = filepath.Join(msgDir, "WeChat Files")
+		// 判断目录是否存在
+		_, err = os.Stat(msgDir)
+		if err != nil {
+			return "", err
+		}
 	}
 	return msgDir, nil
 }
