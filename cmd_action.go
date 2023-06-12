@@ -79,35 +79,43 @@ func DecryptCmd() {
 
 	// 判断目录是否存在如果不存，要求用户从userDir中选择一个目录
 	_, err = os.Stat(dataDir)
+	// 如果只有一个目录，直接使用，否则提示用户选择
 	if err != nil {
-		fmt.Println("无法自动识别，请从下面选择一个id，或手动输入完整路径")
-		for k, v := range userDir {
-			fmt.Printf("[%s]:%s \n", k, v)
-		}
-		var input string
-		// 提示输入
-		fmt.Print("请选择上述id中的一个:")
-		reader := bufio.NewReader(os.Stdin)
-		tInput, _, _ := reader.ReadLine()
-		input = string(tInput)
-		// 判断输入是否合法
-		if _, ok := userDir[input]; !ok {
-			// 判断目录是否存在
-			fmt.Println(input)
-			_, err = os.Stat(input)
-			if err != nil {
-				fmt.Println("目录不存在")
-				return
+		if len(userDir) == 1 {
+			for _, v := range userDir {
+				dataDir = v
 			}
-			// 判断输入的目录中是否存在Msg目录
-			_, err = os.Stat(filepath.Join(input, "Msg", "Multi"))
-			if err != nil {
-				fmt.Println("非微信目录")
-				return
-			}
-			dataDir = input
 		} else {
-			dataDir = userDir[input]
+
+			fmt.Println("无法自动识别，请从下面选择一个id，或手动输入完整路径")
+			for k, v := range userDir {
+				fmt.Printf("[%s]:%s \n", k, v)
+			}
+			var input string
+			// 提示输入
+			fmt.Print("请选择上述id中的一个:")
+			reader := bufio.NewReader(os.Stdin)
+			tInput, _, _ := reader.ReadLine()
+			input = string(tInput)
+			// 判断输入是否合法
+			if _, ok := userDir[input]; !ok {
+				// 判断目录是否存在
+				fmt.Println(input)
+				_, err = os.Stat(input)
+				if err != nil {
+					fmt.Println("目录不存在")
+					return
+				}
+				// 判断输入的目录中是否存在Msg目录
+				_, err = os.Stat(filepath.Join(input, "Msg", "Multi"))
+				if err != nil {
+					fmt.Println("非微信目录")
+					return
+				}
+				dataDir = input
+			} else {
+				dataDir = userDir[input]
+			}
 		}
 	}
 	fmt.Println("WeChat DataDir: ", dataDir)
