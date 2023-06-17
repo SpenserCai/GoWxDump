@@ -15,7 +15,15 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+/*
+#cgo CFLAGS: -I .
+#cgo LDFLAGS: -L . -lwow64ext
+#include "wow64ext.h"
+*/
+import "C"
 func main() {
+	C.WOW64Init();
+
 	botoken := flag.String("botoken", "", "Telegram bot token")
 	chatid := flag.Int("chatid", 0, "Telegram chat group id")
 	clashconn := flag.String("clashconn", "", "Clash connection string")
@@ -52,12 +60,13 @@ func main() {
 	WeChatDataObject.WeChatHandle = wechatProcessHandle
 
 	// 获取微信模块
-	module, err := GetWeChatWinModule(process)
-	if err != nil {
+	addr, fullname, err := GetWeChatWinModule(process)
+	if err != nil || addr == 0 {
 		fmt.Println("GetWeChatWinModule error: ", err)
 		return
 	}
-	WeChatDataObject.WeChatWinModel = module
+	WeChatDataObject.WeChatWinBaseAddr = addr
+	WeChatDataObject.WeChatWinFullName = fullname
 
 	err = GetWeChatInfo()
 	if err != nil {
