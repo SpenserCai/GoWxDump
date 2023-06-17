@@ -1,5 +1,12 @@
 package main
 
+/*
+#cgo CFLAGS: -I .
+#cgo LDFLAGS: -L . -lwow64ext
+#include "wow64ext.h"
+*/
+import "C"
+
 import (
 	"encoding/hex"
 	"fmt"
@@ -12,7 +19,13 @@ import (
 	"golang.org/x/sys/windows/registry"
 
 	"golang.org/x/sys/windows"
+	"errors"
 )
+
+var WeChatExe = "WeChat.exe"
+var WeChatWin  = "WeChatWin.dll"
+
+
 
 // 获取微信进程对象，包含进程ID、进程句柄和Module列表
 func GetWeChatProcess() (windows.ProcessEntry32, error) {
@@ -23,40 +36,105 @@ func GetWeChatProcess() (windows.ProcessEntry32, error) {
 		return process, err
 	}
 	defer windows.CloseHandle(snapshot)
+	
+	err = windows.Process32First(snapshot, &process)
+	if err != nil {
+	    fmt.Println(err);
+		return process, err
+	}
+
+	if windows.UTF16ToString(process.ExeFile[:]) == WeChatExe {
+		return process, nil
+	}	  
+	
 	for {
 		err = windows.Process32Next(snapshot, &process)
 		if err != nil {
 			return process, err
 		}
-		if windows.UTF16ToString(process.ExeFile[:]) == "WeChat.exe" {
+//		fmt.Printf("pid:%d, ppid:%d, %d,  %d, exe:%s\n", process.ProcessID,  process.ParentProcessID,  process.DefaultHeapID   , unsafe.Sizeof(uintptr(0)), windows.UTF16ToString(process.ExeFile[:]) );
+		if windows.UTF16ToString(process.ExeFile[:]) == WeChatExe {
 			return process, nil
 		}
 	}
 }
 
 // 获取微信进程的WeChatWin.dll模块对象，包含模块基址、模块大小和模块路径()
-func GetWeChatWinModule(process windows.ProcessEntry32) (windows.ModuleEntry32, error) {
+func GetWeChatWinModule(process windows.ProcessEntry32) (uint64, string, error) {
 	var module windows.ModuleEntry32
 	module.Size = uint32(unsafe.Sizeof(module))
+	
+	modname,_ := windows.UTF16FromString(WeChatWin);
+	var _fullname  [1024]uint16;
+	_fullname[0] = 0; _fullname[1] = 0;
+
+	addr := C.GetProcessModuleHandle64(C.int(WeChatDataObject.WeChatHandle), (*C.wchar_t)(&modname[0]), (*C.wchar_t)(&_fullname[0])); 
+	fullname := windows.UTF16ToString(_fullname[:]);
+	return uint64(addr), fullname, nil;
+
+// bool ReadProcessMemory64(int hProcess, DWORD64 lpBaseAddress, void* lpBuffer, size_t nSize, size_t *lpNumberOfBytesRead);
+
+
+
+	/*
+	var hMods [1024]windows.Handle
+	var cbNeeded uint32
+
+	err := windows.EnumProcessModulesEx(WeChatDataObject.WeChatHandle, &hMods[0], uint32(unsafe.Sizeof(hMods)), &cbNeeded, windows.LIST_MODULES_ALL           ); 
+	if  err != nil {
+		fmt.Println("Failed to enumerate modules: ", err)
+		return module, err
+	}
+
+	modCount := cbNeeded / uint32(unsafe.Sizeof(hMods[0]))
+	for i := uint32(0); i < modCount; i++ {
+		var modName [windows.MAX_PATH]uint16
+		err = windows.GetModuleFileNameEx(WeChatDataObject.WeChatHandle, hMods[i], &modName[0], uint32(len(modName)))
+		if err != nil {
+			fmt.Println("Failed to get module file name: ", err)
+			continue
+		}
+		if windows.UTF16ToString(modName[:]) == WeChatWin {
+			fmt.Printf("Found module abc.dll at address: 0x%X\n", hMods[i])
+		} else {
+			fmt.Printf("module:%s, addr:0x%x\n",   windows.UTF16ToString(modName[:]), hMods[i]);
+		}
+	}
+	return module, fmt.Errorf("geterror")
+	*/
+	
+	/*	
 	snapshot, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPMODULE, process.ProcessID)
 	if err != nil {
+	    fmt.Println(err)
 		return module, err
 	}
 	defer windows.CloseHandle(snapshot)
+	
+	err = windows.Module32First(snapshot, &module)
+	if err != nil {
+		return module, err
+	}
+	fmt.Println(windows.UTF16ToString(module.Module[:]))
+	if windows.UTF16ToString(module.Module[:]) == WeChatWin {
+		return module, nil
+	}
 	for {
 		err = windows.Module32Next(snapshot, &module)
 		if err != nil {
 			return module, err
 		}
-		if windows.UTF16ToString(module.Module[:]) == "WeChatWin.dll" {
+		fmt.Println(windows.UTF16ToString(module.Module[:]))
+		if windows.UTF16ToString(module.Module[:]) == WeChatWin {
 			return module, nil
 		}
 	}
+  */
 }
 
 // 通过模块获取版本号 c#代码为：string FileVersion = processModule.FileVersionInfo.FileVersion;转成go代码如下
-func GetVersion(module windows.ModuleEntry32) (string, error) {
-	image, imgErr := windows.LoadLibraryEx(windows.UTF16ToString(module.ExePath[:]), 0, windows.LOAD_LIBRARY_AS_DATAFILE)
+func GetVersion(fullname string) (string, error) {
+	image, imgErr := windows.LoadLibraryEx(fullname, 0, windows.LOAD_LIBRARY_AS_DATAFILE)
 	if imgErr != nil {
 		return "", fmt.Errorf("LoadLibraryEx error: %v", imgErr)
 	}
@@ -80,11 +158,11 @@ func GetVersion(module windows.ModuleEntry32) (string, error) {
 }
 
 // 获取微信数据：入参为微信进程句柄，偏移地址，返回值为昵称和错误信息
-func GetWeChatData(process windows.Handle, offset uintptr, nSize int) (string, error) {
+func GetWeChatData(process windows.Handle, offset uint64, nSize int) (string, error) {
 	var buffer = make([]byte, nSize)
-	err := windows.ReadProcessMemory(process, offset, &buffer[0], uintptr(nSize), nil)
-	if err != nil {
-		return "", err
+	err := C.ReadProcessMemory64(C.int(process), C.ulonglong(offset), (unsafe.Pointer)(&buffer[0]), C.uint(nSize), nil)
+	if err == 0 {
+		return "", errors.New("ReadProcessMemory64 failed")
 	}
 	// 声明一个字节数组，暂时为空
 	var textBytes []byte = nil
@@ -98,26 +176,36 @@ func GetWeChatData(process windows.Handle, offset uintptr, nSize int) (string, e
 	return string(textBytes), nil
 }
 
-// 获取微信key：入参为微信进程句柄，偏移地址，返回值为key和错误信息
-func GetWeChatKey(process windows.Handle, offset uintptr) (string, error) {
-	var buffer = make([]byte, 4)
-	err := windows.ReadProcessMemory(process, offset, &buffer[0], 4, nil)
-	if err != nil {
-		return "", err
+
+
+
+func GetWeChatKey(process windows.Handle, offset uint64) (string, error) {
+    var wow64 bool;
+	e := windows.IsWow64Process(process, &wow64);
+	if e != nil {
+		return "", e
+	}
+
+	var buffer = make([]byte, 8)
+	err := C.ReadProcessMemory64(C.int(process), C.ulonglong(offset), (unsafe.Pointer)(&buffer[0]), 8, nil)
+	if err == 0 {
+		return "", errors.New("ReadProcessMemory64 failed x")
 	}
 	var num = 32
 	var buffer2 = make([]byte, num)
-	// c# 代码(IntPtr)(((int)array[3] << 24) + ((int)array[2] << 16) + ((int)array[1] << 8) + (int)array[0]);转成go代码如下
-	offset2 := uintptr((int(buffer[3]) << 24) + (int(buffer[2]) << 16) + (int(buffer[1]) << 8) + int(buffer[0]))
-	err = windows.ReadProcessMemory(process, offset2, &buffer2[0], uintptr(num), nil)
-	if err != nil {
-		return "", err
+	offset2 := (uint64(buffer[3]) << 24) + (uint64(buffer[2]) << 16) + (uint64(buffer[1]) << 8) + (uint64(buffer[0]) << 0) 
+	if !wow64 {
+		offset2 += (uint64(buffer[7]) << 56) + (uint64(buffer[6]) << 48) + (uint64(buffer[5]) << 40) + (uint64(buffer[4]) << 32)
+	}
+	
+	err = C.ReadProcessMemory64(C.int(process), C.ulonglong(offset2), (unsafe.Pointer)(&buffer2[0]), C.uint(num), nil)
+	if err == 0 {
+		return "", errors.New("ReadProcessMemory64 failed y")
 	}
 	// 将byte数组转成hex字符串，并转成大写
 	key := hex.EncodeToString(buffer2)
 	key = strings.ToUpper(key)
 	return key, nil
-
 }
 
 func GetWeChatFromRegistry() (string, error) {

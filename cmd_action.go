@@ -11,27 +11,27 @@ import (
 
 func GetWeChatInfo() error {
 	// 获取微信版本
-	version, err := GetVersion(WeChatDataObject.WeChatWinModel)
+	version, err := GetVersion(WeChatDataObject.WeChatWinFullName)
 	if err != nil {
 		return err
 	}
 	// 获取微信昵称
-	nickName, err := GetWeChatData(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinModel.ModBaseAddr+uintptr(OffSetMap[version][0]), 100)
+	nickName, err := GetWeChatData(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinBaseAddr+uint64(OffSetMap[version][0]), 100)
 	if err != nil {
 		return err
 	}
 	// 获取微信账号
-	account, err := GetWeChatData(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinModel.ModBaseAddr+uintptr(OffSetMap[version][1]), 100)
+	account, err := GetWeChatData(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinBaseAddr+uint64(OffSetMap[version][1]), 100)
 	if err != nil {
 		return err
 	}
 	// 获取微信手机号
-	mobile, err := GetWeChatData(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinModel.ModBaseAddr+uintptr(OffSetMap[version][2]), 100)
+	mobile, err := GetWeChatData(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinBaseAddr+uint64(OffSetMap[version][2]), 100)
 	if err != nil {
 		return err
 	}
 	// 获取微信密钥
-	key, err := GetWeChatKey(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinModel.ModBaseAddr+uintptr(OffSetMap[version][4]))
+	key, err := GetWeChatKey(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinBaseAddr+uint64(OffSetMap[version][4]))
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func DecryptCmd() {
 	dataDir := ""
 	if IsSupportAutoGetData(WeChatDataObject.Version) {
 		// 获取用户数据目录
-		dataDirName, err := GetWeChatData(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinModel.ModBaseAddr+uintptr(OffSetMap[WeChatDataObject.Version][5]), 100)
+		dataDirName, err := GetWeChatData(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinBaseAddr+uint64(OffSetMap[WeChatDataObject.Version][5]), 100)
 		if err != nil {
 			fmt.Println("GetWeChatDataDir error: ", err)
 			return
